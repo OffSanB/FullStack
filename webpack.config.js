@@ -1,14 +1,18 @@
-module.exports={
-    entry:"./src/index.js", //start from this point
+module.exports = {
+    entry:'./src/index.js', //start from this point
     output:{
         path:__dirname+'/public',
-        filename:'budle.js' // bundle all dependencies here
+        filename:'bundle.js' // bundle all dependencies here
     },
     module:{
         loaders:[
             {
                 test:/\.js$/,
                 loader:'babel-loader'
+            },
+            {
+                test:/\.json$/,
+                loader:'json-loader'
             }
         ]
     }
