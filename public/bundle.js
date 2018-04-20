@@ -22021,8 +22021,8 @@
 	            pushState({ currentContestId: contestId }, '/contest/' + contestId);
 	            api.fetchContest(contestId).then(function (contest) {
 	                _this.setState({
-	                    currentContestId: contest.id,
-	                    contests: _extends({}, _this.state.contests, _defineProperty({}, contest.id, contest))
+	                    currentContestId: contest._id,
+	                    contests: _extends({}, _this.state.contests, _defineProperty({}, contest._id, contest))
 	                });
 	            });
 	        }, _this.fetchContestList = function () {
@@ -22033,6 +22033,36 @@
 	                    contests: contests
 	                });
 	            });
+	        }, _this.fetchNames = function (nameIds) {
+	            if (nameIds.length === 0) {
+	                console.log("nameID length is zero");
+	                return;
+	            }
+	            api.fetchNames(nameIds).then(function (names) {
+	                console.log(names);
+	                _this.setState({
+	                    names: names
+	                });
+	            });
+	        }, _this.lookupName = function (nameId) {
+	            if (!_this.state.names || !_this.state.names[nameId]) {
+	                return {
+	                    name: '...'
+	                };
+	            }
+	            return _this.state.names[nameId];
+	        }, _this.addName = function (newName, contestId) {
+	            if (!newName) {
+	                return;
+	            }
+	            console.log(newName + "--newName,contestId---" + contestId);
+	            api.addName(newName, contestId).then(function (resp) {
+	                console.log(resp);
+	                _this.setState({
+	                    contests: _extends({}, _this.state.contests, _defineProperty({}, resp.updatedContest._id, resp.updatedContest)),
+	                    names: _extends({}, _this.state.names, _defineProperty({}, resp.newName._id, resp.newName))
+	                });
+	            }).catch(console.error); //api
 	        }, _temp), _possibleConstructorReturn(_this, _ret);
 	    }
 	
@@ -22058,7 +22088,7 @@
 	    }, {
 	        key: 'componentWillUnmount',
 	        value: function componentWillUnmount() {
-	            // clean timers, listeners
+	            onPopState(null);
 	        }
 	    }, {
 	        key: 'currentContest',
@@ -22070,7 +22100,10 @@
 	        value: function currentContent() {
 	            if (this.state.currentContestId) {
 	                return _react2.default.createElement(_Contest2.default, _extends({
-	                    contestListClick: this.fetchContestList
+	                    contestListClick: this.fetchContestList,
+	                    fetchNames: this.fetchNames,
+	                    lookupName: this.lookupName,
+	                    addName: this.addName
 	                }, this.currentContest()));
 	            }
 	            return _react2.default.createElement(_ContestList2.default, {
@@ -22223,8 +22256,8 @@
 	        }
 	
 	        return _ret = (_temp = (_this = _possibleConstructorReturn(this, (_ref = ContestPreview.__proto__ || Object.getPrototypeOf(ContestPreview)).call.apply(_ref, [this].concat(args))), _this), _this.handleClick = function () {
-	            console.log(_this.props.id);
-	            _this.props.onClick(_this.props.id);
+	            console.log(_this.props._id);
+	            _this.props.onClick(_this.props._id);
 	        }, _temp), _possibleConstructorReturn(_this, _ret);
 	    }
 	
@@ -22252,7 +22285,7 @@
 	}(_react2.default.Component);
 	
 	ContestPreview.propTypes = {
-	    id: _react2.default.PropTypes.number.isRequired,
+	    _id: _react2.default.PropTypes.string.isRequired,
 	    categoryName: _react2.default.PropTypes.string.isRequired,
 	    contestName: _react2.default.PropTypes.string.isRequired,
 	    onClick: _react2.default.PropTypes.func.isRequired
@@ -22267,10 +22300,10 @@
   \***********************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	"use strict";
+	'use strict';
 	
 	Object.defineProperty(exports, "__esModule", {
-	    value: true
+	  value: true
 	});
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -22287,42 +22320,153 @@
 	
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 	
-	var Contest = function (_React$Component) {
-	    _inherits(Contest, _React$Component);
+	var Contest = function (_Component) {
+	  _inherits(Contest, _Component);
 	
-	    function Contest() {
-	        _classCallCheck(this, Contest);
+	  function Contest() {
+	    var _ref;
 	
-	        return _possibleConstructorReturn(this, (Contest.__proto__ || Object.getPrototypeOf(Contest)).apply(this, arguments));
+	    var _temp, _this, _ret;
+	
+	    _classCallCheck(this, Contest);
+	
+	    for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+	      args[_key] = arguments[_key];
 	    }
 	
-	    _createClass(Contest, [{
-	        key: "render",
-	        value: function render() {
-	            return _react2.default.createElement(
-	                "div",
-	                { className: "Contest" },
-	                _react2.default.createElement(
-	                    "div",
-	                    { className: "contest-description" },
-	                    this.props.description
-	                ),
-	                _react2.default.createElement(
-	                    "div",
-	                    { className: "home-link link btn btn-primary",
-	                        onClick: this.props.contestListClick },
-	                    "Contest List"
-	                )
-	            );
-	        }
-	    }]);
+	    return _ret = (_temp = (_this = _possibleConstructorReturn(this, (_ref = Contest.__proto__ || Object.getPrototypeOf(Contest)).call.apply(_ref, [this].concat(args))), _this), _this.handleSubmit = function (event) {
+	      event.preventDefault();
+	      if (!_this.refs.newNameInput.value.length == 0) {
+	        console.log('inside if');
+	        _this.props.addName(_this.props.addName(_this.refs.newNameInput.value, _this.props._id));
+	      };
+	      _this.refs.newNameInput.value = '';
+	    }, _temp), _possibleConstructorReturn(_this, _ret);
+	  }
 	
-	    return Contest;
-	}(_react2.default.Component);
+	  _createClass(Contest, [{
+	    key: 'componentDidMount',
+	    value: function componentDidMount() {
+	      this.props.fetchNames(this.props.nameIds);
+	    }
+	  }, {
+	    key: 'render',
+	    value: function render() {
+	      var _this2 = this;
+	
+	      return _react2.default.createElement(
+	        'div',
+	        { className: 'Contest' },
+	        _react2.default.createElement(
+	          'div',
+	          { className: 'panel panel-default' },
+	          _react2.default.createElement(
+	            'div',
+	            { className: 'panel-heading' },
+	            _react2.default.createElement(
+	              'h3',
+	              { className: 'panel-title' },
+	              'Contest Description'
+	            )
+	          ),
+	          _react2.default.createElement(
+	            'div',
+	            { className: 'panel-body' },
+	            _react2.default.createElement(
+	              'div',
+	              { className: 'contest-description' },
+	              this.props.description
+	            )
+	          )
+	        ),
+	        _react2.default.createElement(
+	          'div',
+	          { className: 'panel panel-default' },
+	          _react2.default.createElement(
+	            'div',
+	            { className: 'panel-heading' },
+	            _react2.default.createElement(
+	              'h3',
+	              { className: 'panel-title' },
+	              'Proposed Names'
+	            )
+	          ),
+	          _react2.default.createElement(
+	            'div',
+	            { className: 'panel-body' },
+	            _react2.default.createElement(
+	              'ul',
+	              { className: 'list-group' },
+	              this.props.nameIds.map(function (nameId) {
+	                return _react2.default.createElement(
+	                  'li',
+	                  { className: 'list-group-item', key: nameId },
+	                  _this2.props.lookupName(nameId).name,
+	                  console.log(_this2.props.lookupName(nameId).name)
+	                );
+	              })
+	            )
+	          )
+	        ),
+	        _react2.default.createElement(
+	          'div',
+	          { className: 'panel panel-info' },
+	          _react2.default.createElement(
+	            'div',
+	            { className: 'panel-heading' },
+	            _react2.default.createElement(
+	              'h3',
+	              { className: 'panel-title' },
+	              'Propose a New Name'
+	            )
+	          ),
+	          _react2.default.createElement(
+	            'div',
+	            { className: 'panel-body' },
+	            _react2.default.createElement(
+	              'form',
+	              { onSubmit: this.handleSubmit },
+	              _react2.default.createElement(
+	                'div',
+	                { className: 'input-group' },
+	                _react2.default.createElement('input', { type: 'text',
+	                  placeholder: 'New Name Here...',
+	                  ref: 'newNameInput',
+	                  className: 'form-control' }),
+	                _react2.default.createElement(
+	                  'span',
+	                  { className: 'input-group-btn' },
+	                  _react2.default.createElement(
+	                    'button',
+	                    { type: 'submit', className: 'btn btn-info' },
+	                    'Sumbit'
+	                  )
+	                )
+	              )
+	            )
+	          )
+	        ),
+	        _react2.default.createElement(
+	          'div',
+	          { className: 'home-link link',
+	            onClick: this.props.contestListClick },
+	          'Contest List'
+	        )
+	      );
+	    }
+	  }]);
+	
+	  return Contest;
+	}(_react.Component);
 	
 	Contest.propTypes = {
-	    description: _react2.default.PropTypes.string.isRequired,
-	    contestListClick: _react2.default.PropTypes.func.isRequired
+	  _id: _react.PropTypes.string.isRequired,
+	  description: _react.PropTypes.string.isRequired,
+	  contestListClick: _react.PropTypes.func.isRequired,
+	  fetchNames: _react.PropTypes.func.isRequired,
+	  nameIds: _react.PropTypes.array.isRequired,
+	  lookupName: _react.PropTypes.func.isRequired,
+	  addName: _react.PropTypes.func.isRequired
 	};
 	
 	exports.default = Contest;
@@ -22339,7 +22483,7 @@
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
-	exports.fetchContestList = exports.fetchContest = undefined;
+	exports.addName = exports.fetchNames = exports.fetchContestList = exports.fetchContest = undefined;
 	
 	var _axios = __webpack_require__(/*! axios */ 178);
 	
@@ -22356,6 +22500,18 @@
 	var fetchContestList = exports.fetchContestList = function fetchContestList() {
 	    return _axios2.default.get('/api/contests').then(function (resp) {
 	        return resp.data.contests;
+	    });
+	};
+	
+	var fetchNames = exports.fetchNames = function fetchNames(nameIds) {
+	    return _axios2.default.get('/api/names/' + nameIds.join(',')).then(function (resp) {
+	        return resp.data.names;
+	    });
+	};
+	
+	var addName = exports.addName = function addName(newName, contestId) {
+	    return _axios2.default.post('/api/names', { newName: newName, contestId: contestId }).then(function (resp) {
+	        return resp.data;
 	    });
 	};
 
